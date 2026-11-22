@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import AgendaEditor from '../components/AgendaEditor'
@@ -15,11 +15,21 @@ export default function MeetingDetail() {
   const [m, setM] = useState<Meeting | null>(null)
   const [plan, setPlan] = useState<PlanItem[]>([])
   const [rev, setRev] = useState(0)
+  const nav = useNavigate()
   const load = () => supabase.from('sitzungen').select('*').eq('id', id!).single().then(r => setM(r.data as Meeting))
   useEffect(() => { load() }, [id])
   if (!m) return <p>Lädt …</p>
   const upd = async (patch: Partial<Meeting>) => { await supabase.from('sitzungen').update(patch).eq('id', m.id); load() }
   const showAgenda = m.status !== 'entwurf'
+  async function remove() {
+    const warn = m!.status === 'beendet'
+      ? 'Diese Sitzung ist beendet. Beim Löschen verschwinden auch Protokoll, Beschlüsse und alle Aufgaben, die zu dieser Sitzung gehören (auch aus früheren Sitzungen übernommene). Das kann nicht rückgängig gemacht werden. Wirklich löschen?'
+      : 'Sitzung mit Tagesordnung, Vorschlägen und Aufgaben löschen? Das kann nicht rückgängig gemacht werden.'
+    if (!confirm(warn)) return
+    const { error } = await supabase.from('sitzungen').delete().eq('id', m!.id)
+    if (error) { alert('Löschen hat nicht geklappt.'); return }
+    nav('/sitzungen')
+  }
 
   return (<>
     <h1>Sitzung am {formatDate(m.datum)}, {m.beginn.slice(0, 5)} Uhr</h1>
@@ -39,6 +49,8 @@ export default function MeetingDetail() {
       <ProposalInbox sitzungId={m.id} onChanged={() => setRev(rev + 1)} />
       <TimeSummary items={plan} gesamtMin={m.geplante_dauer_min} start={meetingStart(m)} />
       <AgendaEditor key={rev} sitzungId={m.id} readOnly={m.status === 'beendet'} onChange={setPlan} />
+      <hr />
+      <button onClick={remove}>Sitzung löschen</button>
     </>}
     {!isAdmin && <>
       {m.status === 'beendet' && <Link className="btn primary" to={`/sitzungen/${m.id}/protokoll`}>Protokoll ansehen</Link>}
