@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
+import { validatePassword } from '../lib/password'
 
 export default function SetPassword() {
   const { passwordSet } = useAuth()
   const [pw, setPw] = useState(''); const [pw2, setPw2] = useState(''); const [err, setErr] = useState<string | null>(null)
   async function submit(e: FormEvent) {
     e.preventDefault()
-    if (pw.length < 10) { setErr('Das Passwort braucht mindestens 10 Zeichen.'); return }
-    if (pw !== pw2) { setErr('Die beiden Passwörter sind nicht gleich.'); return }
+    const bad = validatePassword(pw, pw2)
+    if (bad) { setErr(bad); return }
     const { error } = await supabase.auth.updateUser({ password: pw })
     if (error) setErr('Passwort konnte nicht gespeichert werden.'); else passwordSet()
   }
