@@ -15,6 +15,7 @@ import RunMeeting from './pages/RunMeeting'
 import Tasks from './pages/Tasks'
 import Protocol from './pages/Protocol'
 import Archive from './pages/Archive'
+import ChangePassword from './pages/ChangePassword'
 
 function Guard() {
   const { profile, loading, needsPassword } = useAuth()
@@ -32,6 +33,7 @@ function Guard() {
         <Route path="/aufgaben" element={<Tasks />} />
         <Route path="/sitzungen/:id/protokoll" element={<Protocol />} />
         <Route path="/archiv" element={<Archive />} />
+        <Route path="/passwort" element={<ChangePassword />} />
         <Route path="/admin/*" element={<Admin />} />
         <Route path="*" element={<p>Seite nicht gefunden.</p>} />
       </Route>
