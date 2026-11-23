@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 
 export default function Layout() {
@@ -11,6 +11,7 @@ export default function Layout() {
         <strong>ASV Steinach – Sitzungen</strong>
         <span className="spacer" />
         <span className="muted who">{profile?.name}{isAdmin ? ' (Admin)' : ''}</span>
+        <Link className="btn small" to="/passwort">Passwort ändern</Link>
         <button onClick={signOut}>Abmelden</button>
       </header>
       <nav className="nav">
